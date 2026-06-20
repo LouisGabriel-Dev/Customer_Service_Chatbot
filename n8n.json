@@ -1,0 +1,624 @@
+{
+  "name": "chatbot waha HYBRID SEARCH - Template",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        544
+      ],
+      "id": "d78f7bf5-ee42-4b06-aa25-e61c028c90ab",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIALS_ID",
+          "name": "Google Gemini Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Edit Fields1\"].json[\"chatInput\"] }}",
+        "options": {
+          "systemMessage": "**ROLE:**\nAnda adalah Asisten Toko Digital untuk \"Toko AI Automation\". Tugas utama Anda adalah memberikan informasi produk (stok, harga, spesifikasi) secara akurat melalui WhatsApp.\n\n**BATASAN OPERASIONAL (STRICT RULES):**\n1. PENGGUNAAN TOOL: Anda hanya diperbolehkan menggunakan tool pencarian MAKSIMAL 2 KALI untuk satu pertanyaan pelanggan.\n2. ANTI-LOOPING: Jika setelah 2 kali pencarian Anda tidak menemukan produk yang spesifik (misal: user cari \"Adaptor\" tapi hasil tool hanya menunjukkan \"Kabel\"), jangan mencoba kata kunci lain secara berlebihan.\n3. KEJUJURAN DATA: Jika produk tidak ditemukan setelah 2 upaya, katakan sejujurnya kepada pelanggan bahwa produk tersebut tidak tersedia di katalog saat ini. Jangan pernah berhalusinasi atau mengarang data.\n4. KEBIJAKAN ONGKIR: Jika ditanya ongkir, jawab: \"Biaya pengiriman akan disesuaikan dengan tarif e-commerce terkait.\"\n5. TANPA LINK: Dilarang keras mengirimkan link pembelian dalam bentuk apapun.\n\n**INTERNAL MONOLOGUE (Chain of Thought):**\nSebelum menjawab, lakukan langkah berikut di dalam pikiran Anda:\n- Analisis: Apa yang dicari pelanggan?\n- Pencarian 1: Gunakan kata kunci utama.\n- Pencarian 2 (Opsional): Gunakan variasi kata kunci HANYA JIKA pencarian pertama kosong.\n- Evaluasi: Apakah data ada? Jika ada, cek stok. Jika stock=0 (Habis), jika stock <5 (Ingatkan stok terbatas).\n- Finalisasi: Susun jawaban ramah dalam Bahasa Indonesia.\n\n**GAYA BAHASA:**\n- Gunakan sapaan \"Halo Kak!\", \"Terima kasih\", dan bahasa yang santai namun sopan.\n- Format harga: Rp85.000 (Rupiah).\n- Jika menanyakan banyak produk sekaligus, rangkum dalam satu pesan (gunakan bullet points).\n\n**CONTOH RESPONS JIKA TIDAK ADA:**\n\"Mohon maaf sekali Kak, setelah saya cek di katalog, produk [Nama Produk] belum tersedia untuk saat ini. Mungkin Kakak tertarik dengan kategori produk lainnya?\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        832,
+        272
+      ],
+      "id": "9bf7e48e-be9d-4a5a-80a7-762d9f8f4acb",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aded2ac6-f006-4add-a3cf-70dc8f8519e4",
+              "name": "chatInput",
+              "value": "={{ $('WAHA Trigger').item.json.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "33583ef6-98e6-4b8d-b364-9d0b954aac3e",
+              "name": "session",
+              "value": "={{ $('WAHA Trigger').item.json.session }}",
+              "type": "string"
+            },
+            {
+              "id": "28518ed0-9eec-4e70-88b1-c2c0d44f497c",
+              "name": "chat.id",
+              "value": "={{ $('WAHA Trigger').item.json.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "75d65409-9cb8-44f8-833f-307d52798c1a",
+              "name": "message.id",
+              "value": "={{ $('WAHA Trigger').item.json.payload.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        80
+      ],
+      "id": "893afd4c-0957-419d-8530-991cda50ad51",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('WAHA Trigger').item.json.session }}",
+        "chatId": "={{ $('WAHA Trigger').item.json.payload.from }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1664,
+        160
+      ],
+      "id": "ee129c9f-02ac-47cc-ae58-41bbccea3b04",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "chatId": "={{ $json.chat.id }}",
+        "messageId": "={{ $json.message.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        368,
+        304
+      ],
+      "id": "bc3a01be-dbe5-4efe-9ffd-ac35764c8056",
+      "name": "Send Seen",
+      "retryOnFail": true,
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.max(1, Math.min(5, Math.round($node[\"Edit Fields1\"].json.chatInput.length * 0.05))) }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        544
+      ],
+      "id": "e218c669-2dbb-4802-8302-8523eae3a5da",
+      "name": "Wait",
+      "webhookId": "YOUR_WEBHOOK_TEST_ID",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('Edit Fields1').item.json.session }}",
+        "chatId": "={{ $('Edit Fields1').item.json.chat.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        368,
+        784
+      ],
+      "id": "3bb368aa-d16e-4d56-b686-d9a3d4097b21",
+      "name": "Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Edit Fields1').item.json.session }}",
+        "chatId": "={{ $('Edit Fields1').item.json.chat.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1392,
+        160
+      ],
+      "id": "3fcce93a-2cdf-419b-b90f-10a4152149d3",
+      "name": "Stop Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bb310028-d2ea-41e4-a919-57824b6aa844",
+              "leftValue": "={{ $json.payload.from }}",
+              "rightValue": "@g.us",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            },
+            {
+              "id": "efcae093-87f7-45cc-af0c-3e0d382c40be",
+              "leftValue": "={{ $json.payload.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        80
+      ],
+      "id": "f6c9945c-ef24-4946-b626-cd47e96e6d35",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "content": "## Select Private chat\nOnly pick private chat not group chat",
+        "height": 304,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "a8202d68-97ae-409d-b2b4-2d04e5eee4ef",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Process\n",
+        "height": 992,
+        "width": 224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -64
+      ],
+      "id": "1d64e8ff-375a-4f93-b6c0-3a892c6c2947",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Customer Service\n",
+        "height": 688,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        176
+      ],
+      "id": "7f5c491c-6805-4606-abaa-3e4016cdf769",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Send the massage\n",
+        "height": 208,
+        "width": 464,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        96
+      ],
+      "id": "2848d69d-db30-4e1a-b32a-f6ee675db502",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## wait for the massage"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -16
+      ],
+      "id": "4caec60e-e5f6-48b6-9eab-c1d06d0aef95",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WAHA Trigger').item.json.payload.from }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        544
+      ],
+      "id": "9b3f11d9-3bb9-4dd5-ac64-38ada8642388",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@devlikeapro/n8n-nodes-waha.wahaTrigger",
+      "typeVersion": 202502,
+      "position": [
+        -192,
+        64
+      ],
+      "id": "c2ea7165-7fa2-4a49-b7b9-332679082bb2",
+      "name": "WAHA Trigger",
+      "webhookId": "YOUR_WEBHOOK_PRODUCTION_ID"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('WAHA Trigger').item.json.session }}",
+        "chatId": "={{ $('WAHA Trigger').item.json.payload.from }}",
+        "reply_to": "=",
+        "text": "=maaf server error",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1680,
+        560
+      ],
+      "id": "8d33a795-0c52-4944-9cc5-e50b836d2ad5",
+      "name": "Send a text message1",
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Edit Fields1').item.json.session }}",
+        "chatId": "={{ $('Edit Fields1').item.json.chat.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1408,
+        560
+      ],
+      "id": "a87d9825-83a5-44a5-946e-74d7024dc600",
+      "name": "Stop Typing1",
+      "credentials": {
+        "wahaApi": {
+          "id": "YOUR_WAHA_CREDENTIALS_ID",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Error",
+        "height": 208,
+        "width": 464,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        496
+      ],
+      "id": "40402a59-9c51-4eca-b866-c105c00a9298",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        720
+      ],
+      "id": "5eec7018-6d9a-46e2-b5f0-14346767f54b",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIALS_ID",
+          "name": "Google Gemini Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Gunakan tool ini untuk mencari informasi produk (stok, harga, spek) di katalog. INSTRUKSI BERHENTI: Jika hasil pencarian pertama tidak relevan atau kosong, jangan mencoba variasi kata kunci lebih dari dua kali. Jika tetap tidak ditemukan, segera berikan informasi apa adanya (produk tidak tersedia). Jangan memaksa melakukan pencarian berulang dengan kata kunci yang mirip.",
+        "tableName": {
+          "__rl": true,
+          "value": "embed_product",
+          "mode": "list",
+          "cachedResultName": "embed_product"
+        },
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        544
+      ],
+      "id": "eb076116-20ad-411a-bd70-5d5c2cbfdfe2",
+      "name": "data product",
+      "credentials": {
+        "supabaseApi": {
+          "id": "YOUR_SUPABASE_CREDENTIALS_ID",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send Seen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop Typing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Send Seen": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA Trigger": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "data product",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data product": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
