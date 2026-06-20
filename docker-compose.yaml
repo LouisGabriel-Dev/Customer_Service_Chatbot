@@ -28,7 +28,7 @@ services:
     ports:
       - '3000:3000/tcp'
     environment:
-      - WHATSAPP_HOOK_URL=http://n8n:5678/webhook/waha
+      - WHATSAPP_HOOK_URL= you need to paste the either test or production url from the waha node
       - WHATSAPP_HOOK_EVENTS=message,state.change
     volumes:
       - './sessions:/app/.sessions'
