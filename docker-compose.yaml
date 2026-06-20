@@ -1,0 +1,37 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: waha
+    restart: always
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '100m'
+        max-file: '10'
+    ports:
+      - '3000:3000/tcp'
+    environment:
+      - WHATSAPP_HOOK_URL=http://localhost:5678/webhook/waha
+      - WHATSAPP_HOOK_EVENTS=message,state.change
+    volumes:
+      - './sessions:/app/.sessions'
+      - './media:/app/.media'
+    env_file:
+      - .env
