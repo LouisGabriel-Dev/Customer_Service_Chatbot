@@ -36,6 +36,7 @@ This project automates the entire first-line customer support pipeline. By deplo
 ### System Architecture
 Below is the data flow and logic routing implemented within the n8n canvas:
 
+```mermaid
 graph TD
     %% Nodes Definition
     A[📱 WhatsApp Message Inbound] -->|Webhook Event| B(WAHA Trigger Node)
