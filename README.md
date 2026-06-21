@@ -5,6 +5,7 @@ An AI-Powered Customer Service Automation System built on self-hosted infrastruc
 ## 🎥 Video Demo
 <!-- TIPS: Rekam workflow n8n & UI WhatsApp/Web pakai Loom atau jadikan GIF, lalu masukkan link/file-nya di bawah ini -->
 [▶ Click here to watch the system in action (video in progress)]
+![App Demo](WhatsAppVideo2026-06-21at08.24.34-ezgif.com-video-to-gif-converter.gif)
 
 ---
 
