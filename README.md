@@ -1,3 +1,4 @@
+
 # Customer_Service_Chatbot
 
 An AI-Powered Customer Service Automation System built on self-hosted infrastructure. This system automatically processes inbound customer inquiries, generates context-aware responses using LLMs, and handles data routing efficiently 24/7.
@@ -5,7 +6,7 @@ An AI-Powered Customer Service Automation System built on self-hosted infrastruc
 ## 🎥 Video Demo
 <!-- TIPS: Rekam workflow n8n & UI WhatsApp/Web pakai Loom atau jadikan GIF, lalu masukkan link/file-nya di bawah ini -->
 [▶ Click here to watch the system in action (video in progress)]
-![App Demo](WhatsAppVideo2026-06-21at08.24.34-ezgif.com-video-to-gif-converter.gif)
+<img width="394" height="848" alt="WhatsAppVideo2026-06-21at08 24 34-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/890bf363-3b16-4a31-9fbd-214db3d6be06" />
 
 ---
 
