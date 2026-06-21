@@ -59,7 +59,7 @@ graph TD
     L[🧬 Embeddings Google Gemini] -->|Vector Search| K
 
     %% Output & Error Handling
-    H -->|Sukses| M(Stop Typing Node)
+    H -->|Success| M(Stop Typing Node)
     M --> N(Send Text Message via WAHA)
 
     H -->|Error| O(Stop Typing 1 Node)
