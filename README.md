@@ -41,29 +41,29 @@ graph TD
     %% Nodes Definition
     A[📱 WhatsApp Message Inbound] -->|Webhook Event| B(WAHA Trigger Node)
     
-    %% Sektor Seleksi & Keamanan
+    %% Filter your chat
     B --> C{Filter Node}
-    C -->|Bukan dari Grup & Bukan Pesan Sendiri| D(Edit Fields Node)
-    C -->|Grup / Pesan Sendiri| Drop[🛑 Drop Message]
+    C -->|Private Message| D(Edit Fields Node)
+    C -->|Group Message| Drop[🛑 Drop Message]
 
-    %% Sektor Proses Indrawi Bot
+    %% This Help Bot More Natural
     D --> E(Send Seen Node)
     E --> F(Wait Node <br> Dynamic Delay)
     F --> G(Start Typing Node)
 
-    %% Sektor Inti AI & Database
+    %% AI & Database
     G --> H(AI Agent Node)
     I[🧠 Google Gemini Chat Model] <-->|Language Model| H
     J[🗂️ Simple Memory] <-->|Session ID: from| H
     K[📦 Data Product <br> Supabase Vector Store] <-->|Tool: Retrieve Product Specs| H
     L[🧬 Embeddings Google Gemini] -->|Vector Search| K
 
-    %% Sektor Output & Penanganan Error
+    %% Output & Error Handling
     H -->|Sukses| M(Stop Typing Node)
     M --> N(Send Text Message via WAHA)
 
-    H -->|Gagal / Error| O(Stop Typing 1 Node)
-    O --> P(Send Text Message 1: 'Maaf Server Error')
+    H -->|Error| O(Stop Typing 1 Node)
+    O --> P(Send Text Message 1: 'Server is unvailable')
 
     %% Styling
     style A fill:#25D366,stroke:#128C7E,stroke-width:2px,color:#fff
