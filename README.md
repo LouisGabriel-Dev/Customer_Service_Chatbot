@@ -36,12 +36,38 @@ This project automates the entire first-line customer support pipeline. By deplo
 ### System Architecture
 Below is the data flow and logic routing implemented within the n8n canvas:
 
-```mermaid
 graph TD
-    A[Inbound Customer Message] -->|Webhook Trigger| B(n8n Webhook Node)
-    B --> C{Logic Router / Switch Node}
-    C -->|Standard Query| D(AI Agent Node + Gemini API)
-    C -->|Complex/Urgent Escalation| E(Internal Alert System / Human Handoff)
-    D --> F(Data Formatter / Code Node)
-    F --> G(Send Automated Response via API)
-    F --> H(Log Interaction to Database/Sheets)
+    %% Nodes Definition
+    A[📱 WhatsApp Message Inbound] -->|Webhook Event| B(WAHA Trigger Node)
+    
+    %% Sektor Seleksi & Keamanan
+    B --> C{Filter Node}
+    C -->|Bukan dari Grup & Bukan Pesan Sendiri| D(Edit Fields Node)
+    C -->|Grup / Pesan Sendiri| Drop[🛑 Drop Message]
+
+    %% Sektor Proses Indrawi Bot
+    D --> E(Send Seen Node)
+    E --> F(Wait Node <br> Dynamic Delay)
+    F --> G(Start Typing Node)
+
+    %% Sektor Inti AI & Database
+    G --> H(AI Agent Node)
+    I[🧠 Google Gemini Chat Model] <-->|Language Model| H
+    J[🗂️ Simple Memory] <-->|Session ID: from| H
+    K[📦 Data Product <br> Supabase Vector Store] <-->|Tool: Retrieve Product Specs| H
+    L[🧬 Embeddings Google Gemini] -->|Vector Search| K
+
+    %% Sektor Output & Penanganan Error
+    H -->|Sukses| M(Stop Typing Node)
+    M --> N(Send Text Message via WAHA)
+
+    H -->|Gagal / Error| O(Stop Typing 1 Node)
+    O --> P(Send Text Message 1: 'Maaf Server Error')
+
+    %% Styling
+    style A fill:#25D366,stroke:#128C7E,stroke-width:2px,color:#fff
+    style H fill:#ff9900,stroke:#cc7a00,stroke-width:2px,color:#000
+    style I fill:#4285F4,stroke:#357AE8,stroke-width:2px,color:#fff
+    style K fill:#3ecf8e,stroke:#2b9a66,stroke-width:2px,color:#fff
+    style P fill:#ea4335,stroke:#c5221f,stroke-width:2px,color:#fff
+    style Drop fill:#777,stroke:#555,stroke-width:1px,color:#fff
